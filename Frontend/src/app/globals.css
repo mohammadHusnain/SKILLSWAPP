@@ -1,0 +1,316 @@
+@import "tailwindcss";
+
+:root {
+  /* Dark Theme (Default) */
+  --primary: #0b132b;
+  --secondary: #1c2541;
+  --accent: #3a86ff;
+  --text: #f5f7fa;
+  --background: #0b132b;
+  --foreground: #f5f7fa;
+  
+  /* Additional theme variables */
+  --primary-dark: #0a0f1f;
+  --secondary-light: #2a3a5c;
+  --accent-light: #5ba0ff;
+  --accent-dark: #2c6bcc;
+  --text-muted: #a8b2d1;
+  --border: #1c2541;
+  --card-bg: rgba(28, 37, 65, 0.3);
+  --glass-bg: rgba(11, 19, 43, 0.8);
+}
+
+[data-theme="light"] {
+  /* Light Theme */
+  --primary: #ffffff;
+  --secondary: #f8fafc;
+  --accent: #2563eb;
+  --text: #1e293b;
+  --background: #ffffff;
+  --foreground: #1e293b;
+  
+  /* Additional theme variables */
+  --primary-dark: #f1f5f9;
+  --secondary-light: #e2e8f0;
+  --accent-light: #3b82f6;
+  --accent-dark: #1d4ed8;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --card-bg: rgba(248, 250, 252, 0.8);
+  --glass-bg: rgba(255, 255, 255, 0.9);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-text: var(--text);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Global Styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: var(--foreground);
+  font-family: 'Times New Roman', Times, serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-light);
+}
+
+/* Glassmorphism utility classes */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glow {
+  box-shadow: 0 0 20px rgba(58, 134, 255, 0.3);
+}
+
+.glow-hover:hover {
+  box-shadow: 0 0 30px rgba(58, 134, 255, 0.5);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animation utilities */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Particle animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Enhanced particle animations */
+@keyframes particleFloat {
+  0%, 100% { 
+    transform: translateY(0px) translateX(0px) scale(1);
+    opacity: 0.4;
+  }
+  25% { 
+    transform: translateY(-15px) translateX(10px) scale(1.1);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: translateY(-25px) translateX(-5px) scale(0.9);
+    opacity: 0.6;
+  }
+  75% { 
+    transform: translateY(-10px) translateX(-10px) scale(1.05);
+    opacity: 0.7;
+  }
+}
+
+.particle-float {
+  animation: particleFloat 4s ease-in-out infinite;
+}
+
+/* Globe animations */
+@keyframes globeRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.globe-inner {
+  animation: globeRotate 30s linear infinite;
+}
+
+/* Pulse animation for glow effects */
+@keyframes pulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(58, 134, 255, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(58, 134, 255, 0.6);
+  }
+}
+
+.pulse-glow {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Gradient background animation */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-gradient {
+  background: linear-gradient(-45deg, var(--primary), var(--secondary), var(--primary-dark), var(--secondary-light));
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* Floating elements */
+@keyframes floatUp {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-20px) rotate(360deg); }
+}
+
+.float-up {
+  animation: floatUp 3s ease-in-out infinite alternate;
+}
+
+/* Responsive design helpers */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  
+  .globe-container {
+    display: none !important;
+  }
+}
+
+/* Enhanced hover effects */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Cursor pointer for all buttons */
+button, 
+[role="button"],
+a[href],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  cursor: pointer;
+}
+
+button:hover,
+[role="button"]:hover,
+a[href]:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover {
+  cursor: pointer;
+}
+
+/* Text selection styling */
+::selection {
+  background: var(--accent);
+  color: white;
+}
+
+::-moz-selection {
+  background: var(--accent);
+  color: white;
+}
+
+/* Enhanced input focus effects */
+.input-focus-glow:focus {
+  box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.3);
+  border-color: var(--accent);
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(58, 134, 255, 0.2);
+}
+
+/* Button ripple effect */
+.ripple-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.ripple-button:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Floating label animation */
+.floating-label {
+  position: relative;
+}
+
+.floating-label input:focus + label,
+.floating-label input:not(:placeholder-shown) + label {
+  transform: translateY(-20px) scale(0.8);
+  color: var(--accent);
+}
+
+.floating-label label {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  background: var(--background);
+  padding: 0 4px;
+}

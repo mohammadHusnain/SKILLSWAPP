@@ -1,0 +1,19 @@
+[33mcommit 2c54323259ab90039e0b73f9d7b1d846b8864b15[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Muhammad Husnain <husnainbhinder682@gmail.com>
+Date:   Sun Nov 16 22:44:01 2025 +0500
+
+    Pushing MVP
+
+[33mcommit ebe811bd9bddd636e813796f6917fc1f1090e9c0[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Muhammad Husnain <husnainbhinder682@gmail.com>
+Date:   Sun Nov 16 22:34:12 2025 +0500
+
+    Enhance README with detailed project overview
+    
+    Expanded project description and objectives in README.
+
+[33mcommit 79ce026c00f7b6f7e7ac8cdb34a9a8882a54f585[m
+Author: Muhammad Husnain <husnainbhinder682@gmail.com>
+Date:   Sun Nov 16 22:30:06 2025 +0500
+
+    Initial commit
