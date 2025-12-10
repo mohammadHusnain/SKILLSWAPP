@@ -131,3 +131,10 @@ dmypy.json
 # MongoDB
 *.db
 *.ns
+
+.env
+.env.local
+.env.development
+.env.production
+*.env
+
