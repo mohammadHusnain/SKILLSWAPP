@@ -585,6 +585,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.handle_edit_message(data)
             elif event_type == 'delete_message':
                 await self.handle_delete_message(data)
+            elif event_type == 'ping':
+                # Heartbeat to keep connection alive
+                await self.send(text_data=json.dumps({
+                    'type': 'pong'
+                }))
             else:
                 await self.send(text_data=json.dumps({
                     'type': 'error',

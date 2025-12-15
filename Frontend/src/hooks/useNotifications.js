@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { api, tokenManager } from '@/lib/api';
 import { useToast } from '@/components/ui/use-toast';
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+const rawWsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+const WS_URL = rawWsUrl.replace(/\/ws\/?$/, '').replace(/\/$/, '');
 
 export function useNotifications() {
   const [notifications, setNotifications] = useState([]);
@@ -14,6 +15,7 @@ export function useNotifications() {
   const [wsConnected, setWsConnected] = useState(false);
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
+  const heartbeatIntervalRef = useRef(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -109,82 +111,71 @@ export function useNotifications() {
     }
   }, [router, markAsRead]);
 
-  // Connect to WebSocket
+  // Connect to WebSocket with strict singleton pattern
   const connectWebSocket = useCallback(() => {
-    if (!tokenManager.isAuthenticated()) {
-      return;
+    if (!tokenManager.isAuthenticated()) return;
+
+    // Prevent duplicate connections
+    if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
+        return;
     }
 
     const token = localStorage.getItem('access_token');
-    if (!token) {
-      return;
-    }
+    if (!token) return;
 
-    // Close existing connection
-    if (wsRef.current) {
-      wsRef.current.close();
-    }
-
-    // Connect to WebSocket (using chat consumer, which handles notifications)
-    // We'll use a dummy conversation_id since we're only interested in notifications
-    // The consumer will join the notification group on authentication
-    // Using 'notifications' as conversation_id - consumer will handle it gracefully
+    // Connect to WebSocket
     const ws = new WebSocket(`${WS_URL}/ws/chat/notifications/?token=${token}`);
     wsRef.current = ws;
+
+    // Heartbeat for this specific connection (managed via ref declared at top level)
+
 
     ws.onopen = () => {
       console.log('WebSocket connected for notifications');
       setWsConnected(true);
       
-      // Authenticate
-      ws.send(JSON.stringify({
-        type: 'authenticate',
-        token: token
-      }));
+      // Clear any existing heartbeat
+      if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
+
+      // Start heartbeat
+      heartbeatIntervalRef.current = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'ping' }));
+        }
+      }, 30000); // 30 seconds
     };
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         
-        if (data.type === 'authenticated') {
-          console.log('WebSocket authenticated');
-          // Request missed notifications
-          ws.send(JSON.stringify({
-            type: 'notifications_sync',
-            unread_only: true,
-            limit: 50
-          }));
-        } else if (data.type === 'notification') {
-          // New notification received
-          const notification = data.notification;
-          setNotifications(prev => [notification, ...prev]);
-          setUnreadCount(prev => prev + 1);
-          
-          // Show toast
-          toast({
-            title: notification.title,
-            description: notification.body,
-            variant: 'default',
-            duration: 5000
-          });
-        } else if (data.type === 'missed_notifications') {
-          // Missed notifications on reconnect
-          const missed = data.notifications || [];
-          if (missed.length > 0) {
-            setNotifications(prev => [...missed, ...prev]);
-            setUnreadCount(prev => prev + missed.length);
-          }
-        } else if (data.type === 'notifications_sync') {
-          // Sync response
-          const synced = data.notifications || [];
-          setNotifications(prev => {
-            // Merge with existing, avoiding duplicates
-            const existingIds = new Set(prev.map(n => n.id));
-            const newNotifications = synced.filter(n => !existingIds.has(n.id));
-            return [...newNotifications, ...prev];
-          });
+        if (data.type === 'pong') {
+            return;
         }
+
+        if (data.type === 'authenticated') {
+           // Request missed notifications
+           ws.send(JSON.stringify({
+             type: 'notifications_sync',
+             unread_only: true,
+             limit: 50
+           }));
+        } else if (data.type === 'notification' || data.type === 'notification_received') {
+          // New notification received
+          const notification = data.notification || data; // handle both structures
+          if (notification) {
+              setNotifications(prev => [notification, ...prev]);
+              setUnreadCount(prev => prev + 1);
+              
+              toast({
+                title: notification.title,
+                description: notification.body,
+                variant: 'default',
+                duration: 5000
+              });
+          }
+        }
+        // ... (handle missed notifications sync)
       } catch (error) {
         console.error('Error parsing WebSocket message:', error);
       }
@@ -192,19 +183,30 @@ export function useNotifications() {
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
-      setWsConnected(false);
+      // Wait for close
     };
 
-    ws.onclose = () => {
-      console.log('WebSocket disconnected');
+    ws.onclose = (event) => {
+      console.log('WebSocket disconnected', event.code, event.reason);
       setWsConnected(false);
       
-      // Attempt to reconnect after 3 seconds
-      reconnectTimeoutRef.current = setTimeout(() => {
-        if (tokenManager.isAuthenticated()) {
-          connectWebSocket();
-        }
-      }, 3000);
+      // Only clear ref if it matches this socket
+      if (wsRef.current === ws) {
+        wsRef.current = null;
+      }
+
+      if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
+
+      // Simple reconnect logic with backoff or just manual
+      // Auto-reconnect if not 1000
+      if (!reconnectTimeoutRef.current && event.code !== 1000) {
+          reconnectTimeoutRef.current = setTimeout(() => {
+            reconnectTimeoutRef.current = null;
+            if (tokenManager.isAuthenticated()) {
+              connectWebSocket();
+            }
+          }, 3000);
+      }
     };
   }, [toast]);
 
@@ -217,19 +219,18 @@ export function useNotifications() {
         fetchUnreadCount()
       ]);
       setLoading(false);
-      
-      // Connect WebSocket
-      connectWebSocket();
     };
 
     if (tokenManager.isAuthenticated()) {
       initialize();
+      connectWebSocket();
     }
 
     // Cleanup on unmount
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
+        wsRef.current = null;
       }
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);

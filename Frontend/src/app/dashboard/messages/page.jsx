@@ -209,7 +209,15 @@ const MessagesPage = () => {
   const formatTime = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    // User requested "real time and date". Show full format like "Dec 16, 2025, 2:25 PM"
+    return date.toLocaleString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric',
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+    });
   };
 
   const getOtherParticipant = (conversation) => {
