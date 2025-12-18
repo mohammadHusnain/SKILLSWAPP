@@ -79,7 +79,7 @@ const Header = () => {
           {/* Auth Buttons and Theme Switcher */}
           <div className="hidden lg:flex items-center space-x-4">
             <ThemeSwitcher />
-            <Link href="/login">
+            <Link href="/login/select">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -134,7 +134,7 @@ const Header = () => {
                   <div className="flex justify-center mb-3">
                     <ThemeSwitcher />
                   </div>
-                  <Link href="/login" className="block">
+                  <Link href="/login/select" className="block">
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}

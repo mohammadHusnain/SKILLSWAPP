@@ -5,13 +5,19 @@ import { useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { User, Mail, Calendar, Settings, Shield, Heart, MessageSquare, BarChart3, TrendingUp, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { tokenManager, profileAPI, api } from '@/lib/api';
+import { tokenManager, profileAPI, api, matchingAPI, messageAPI, notificationsAPI } from '@/lib/api';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import { formatDistanceToNow } from 'date-fns';
 
 const DashboardPage = () => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [profileCompletion, setProfileCompletion] = useState(0);
+  const [dashboardStats, setDashboardStats] = useState({
+    matchesCount: 0,
+    conversationsCount: 0,
+    recentActivity: []
+  });
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
@@ -44,10 +50,19 @@ const DashboardPage = () => {
     try {
       setIsLoading(true);
 
-      // Fetch user details and profile in parallel
-      const [userResponse, profileResponse] = await Promise.allSettled([
+      // Fetch all required data in parallel
+      const [
+        userResponse, 
+        profileResponse, 
+        matchesResponse, 
+        conversationsResponse, 
+        notificationsResponse
+      ] = await Promise.allSettled([
         api.get('/auth/user/'),
-        profileAPI.getProfile().catch(() => null), // Profile might not exist yet
+        profileAPI.getProfile().catch(() => null),
+        matchingAPI.getMatches({ limit: 1 }), // Just to get total count
+        messageAPI.getConversations(),
+        notificationsAPI.getNotifications(5)  // Recent 5 notifications
       ]);
 
       // Set user data
@@ -64,9 +79,15 @@ const DashboardPage = () => {
         setProfileCompletion(0);
       }
 
+      // Update Dashboard Stats
+      setDashboardStats({
+        matchesCount: matchesResponse.status === 'fulfilled' ? (matchesResponse.value.pagination?.total || matchesResponse.value.total || matchesResponse.value.matches?.length || 0) : 0,
+        conversationsCount: conversationsResponse.status === 'fulfilled' ? (conversationsResponse.value.conversations?.length || 0) : 0,
+        recentActivity: notificationsResponse.status === 'fulfilled' ? (notificationsResponse.value.notifications || []) : []
+      });
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      // Set fallback user data if API fails
       setUser({ name: 'User', is_verified: false });
     } finally {
       setIsLoading(false);
@@ -117,8 +138,8 @@ const DashboardPage = () => {
   const skillsTeachingCount = profile?.skills_offered?.length || 0;
 
   const stats = [
-    { label: 'Potential Matches', value: '12', icon: Heart, color: 'text-pink-500', bg: 'bg-pink-500/10', link: '/dashboard/matches' },
-    { label: 'Active Conversations', value: '5', icon: MessageSquare, color: 'text-blue-500', bg: 'bg-blue-500/10', link: '/dashboard/messages' },
+    { label: 'Potential Matches', value: dashboardStats.matchesCount.toString(), icon: Heart, color: 'text-pink-500', bg: 'bg-pink-500/10', link: '/dashboard/matches' },
+    { label: 'Active Conversations', value: dashboardStats.conversationsCount.toString(), icon: MessageSquare, color: 'text-blue-500', bg: 'bg-blue-500/10', link: '/dashboard/messages' },
     { label: 'Profile Completion', value: `${profileCompletion}%`, icon: User, color: 'text-green-500', bg: 'bg-green-500/10', link: '/dashboard/profile' },
     { label: 'Skills Teaching', value: skillsTeachingCount.toString(), icon: TrendingUp, color: 'text-purple-500', bg: 'bg-purple-500/10', link: '/dashboard/profile' },
   ];
@@ -138,7 +159,7 @@ const DashboardPage = () => {
       icon: Heart,
       href: '/dashboard/matches',
       color: 'from-pink-500 to-rose-500',
-      stats: '12 potential matches'
+      stats: `${dashboardStats.matchesCount} potential matches`
     },
     {
       title: 'Messaging',
@@ -146,7 +167,7 @@ const DashboardPage = () => {
       icon: MessageSquare,
       href: '/dashboard/messages',
       color: 'from-purple-500 to-indigo-500',
-      stats: '5 active conversations'
+      stats: `${dashboardStats.conversationsCount} active conversations`
     },
     {
       title: 'Analytics',
@@ -279,19 +300,24 @@ const DashboardPage = () => {
         >
           <h3 className="text-xl font-bold text-text mb-6">Recent Activity</h3>
           <div className="space-y-4">
-            {[
-              { type: 'match', text: 'New potential match: Sarah Johnson', time: '2 hours ago' },
-              { type: 'message', text: 'Message from Alex Chen', time: '5 hours ago' },
-              { type: 'profile', text: 'Profile view from Maria Garcia', time: '1 day ago' },
-            ].map((activity, index) => (
-              <div key={index} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-accent/5 transition-colors">
-                <div className="w-2 h-2 bg-accent rounded-full" />
-                <div className="flex-1">
-                  <p className="text-text">{activity.text}</p>
-                  <p className="text-sm text-text-muted">{activity.time}</p>
+            {dashboardStats.recentActivity.length > 0 ? (
+              dashboardStats.recentActivity.map((activity, index) => (
+                <div key={activity.id || index} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-accent/5 transition-colors">
+                  <div className={`w-2 h-2 rounded-full ${activity.is_read ? 'bg-text-muted' : 'bg-accent'}`} />
+                  <div className="flex-1">
+                    <p className="text-text">{activity.message || activity.text}</p>
+                    <p className="text-sm text-text-muted">
+                      {activity.created_at ? formatDistanceToNow(new Date(activity.created_at), { addSuffix: true }) : 'Recently'}
+                    </p>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-text-muted">
+                <p>No recent activity found.</p>
+                <p className="text-sm">Start exchanging skills to see updates here!</p>
               </div>
-            ))}
+            )}
           </div>
         </motion.div>
       </div>

@@ -162,4 +162,10 @@ urlpatterns = [
         path('<str:session_id>/cancel/', cancel_session_view, name='cancel_session'),
         path('<str:session_id>/delete/', delete_session_view, name='delete_session'),
     ])),
+
+    # Admin endpoints
+    path('admin/', include([
+        path('auth/', include('api.admin_auth.urls')),
+        path('', include('api.admin_dashboard.urls')),
+    ])),
 ]

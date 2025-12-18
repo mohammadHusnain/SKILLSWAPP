@@ -525,6 +525,16 @@ export const messageAPI = {
     }
   },
 
+  // Get current user's conversations
+  getConversations: async () => {
+    try {
+      const response = await api.get('/messages/conversations/');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Upload file
   uploadFile: async (file) => {
     try {
@@ -536,6 +546,39 @@ export const messageAPI = {
           'Content-Type': 'multipart/form-data',
         },
       });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+};
+
+// Notification API methods
+export const notificationsAPI = {
+  // Get notifications for current user
+  getNotifications: async (limit = 10, skip = 0) => {
+    try {
+      const response = await api.get(`/notifications/?limit=${limit}&skip=${skip}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Get unread count
+  getUnreadCount: async () => {
+    try {
+      const response = await api.get('/notifications/unread-count/');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Mark all as read
+  markAllRead: async () => {
+    try {
+      const response = await api.post('/notifications/mark-all-read/');
       return response.data;
     } catch (error) {
       throw error;
