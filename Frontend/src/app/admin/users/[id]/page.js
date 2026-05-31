@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { adminService } from "@/lib/adminApi";
 import { format } from "date-fns";
@@ -19,12 +20,13 @@ import { Loader2, ArrowLeft, Trash2, Calendar, Shield, MapPin, User as UserIcon,
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Edit, Save, X } from "lucide-react";
 
 export default function ProfileDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,7 +44,7 @@ export default function ProfileDetailPage() {
     rating: 0
   });
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
       const res = await adminService.getUserDetails(id);
@@ -63,11 +65,11 @@ export default function ProfileDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     if (id) fetchData();
-  }, [id]);
+  }, [id, fetchData]);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -173,7 +175,14 @@ export default function ProfileDetailPage() {
               <div className="flex flex-col md:flex-row items-center md:items-end gap-6 -mt-12">
                 <div className="w-32 h-32 rounded-3xl bg-card border-4 border-background shadow-xl flex items-center justify-center overflow-hidden">
                   {profile.avatar_url ? (
-                    <img src={profile.avatar_url} alt={profile.name} className="w-full h-full object-cover" />
+                    <Image
+                      src={profile.avatar_url}
+                      alt={profile.name}
+                      width={128}
+                      height={128}
+                      className="w-full h-full object-cover"
+                      unoptimized
+                    />
                   ) : (
                     <UserIcon className="w-12 h-12 text-accent" />
                   )}

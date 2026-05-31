@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
 import { adminService } from "@/lib/adminApi";
 import { format } from "date-fns";
 import { 
@@ -23,11 +24,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function ProfilesPage() {
+  const { toast } = useToast();
   const [profiles, setProfiles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -38,7 +40,7 @@ export default function ProfilesPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchProfiles = async () => {
+  const fetchProfiles = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -51,11 +53,11 @@ export default function ProfilesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page]);
 
   useEffect(() => {
     fetchProfiles();
-  }, [page]);
+  }, [fetchProfiles]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -134,7 +136,14 @@ export default function ProfilesPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center border border-accent/20 overflow-hidden">
                           {profile.avatar_url ? (
-                            <img src={profile.avatar_url} alt={profile.name} className="w-full h-full object-cover" />
+                            <Image
+                              src={profile.avatar_url}
+                              alt={profile.name}
+                              width={40}
+                              height={40}
+                              className="w-full h-full object-cover"
+                              unoptimized
+                            />
                           ) : (
                             <UserIcon className="w-5 h-5 text-accent" />
                           )}

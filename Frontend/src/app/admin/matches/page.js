@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { adminService } from "@/lib/adminApi";
 import { format } from "date-fns";
 import { 
@@ -23,7 +23,7 @@ export default function MatchesPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalMatches, setTotalMatches] = useState(0);
 
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await adminService.getMatches(page, 10);
@@ -35,11 +35,11 @@ export default function MatchesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page]);
 
   useEffect(() => {
     fetchMatches();
-  }, [page]);
+  }, [fetchMatches]);
 
   return (
     <div className="space-y-6">

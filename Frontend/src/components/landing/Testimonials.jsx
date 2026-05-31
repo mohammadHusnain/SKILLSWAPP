@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSpring, animated } from 'react-spring';
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 
 const Testimonials = () => {
@@ -65,12 +64,6 @@ const Testimonials = () => {
     setCurrentIndex(index);
     setIsAutoPlaying(false);
   };
-
-  // Spring animation for smooth transitions
-  const slideProps = useSpring({
-    transform: `translateX(-${currentIndex * 100}%)`,
-    config: { tension: 300, friction: 30 }
-  });
 
   return (
     <section id="testimonials" className="py-20 lg:py-32 relative overflow-hidden">

@@ -1,2 +1,2 @@
-// Re-export toast functionality from components/ui
-export { useToast, toast } from "@/components/ui/use-toast";
+// Re-export toast hook from components/ui.
+export { useToast } from "@/components/ui/use-toast";

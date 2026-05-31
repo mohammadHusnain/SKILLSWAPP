@@ -53,6 +53,7 @@ validateEnvironment();
 
 const nextConfig = {
   reactStrictMode: true,
+  outputFileTracingRoot: path.resolve(process.cwd()),
 
   // ✅ Allow external image domains (e.g., Unsplash, Pexels, etc.)
   images: {
