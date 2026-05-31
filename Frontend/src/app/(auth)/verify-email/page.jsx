@@ -18,7 +18,7 @@ const VerifyEmailPage = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState(null);
   const [resendEmail, setResendEmail] = useState('');
   const [isResending, setIsResending] = useState(false);
   
@@ -39,7 +39,7 @@ const VerifyEmailPage = () => {
     }
   }, [searchParams]);
 
-  const verifyEmail = async (verificationToken: string) => {
+  const verifyEmail = async (verificationToken) => {
     try {
       await authAPI.verifyEmail(verificationToken);
       setIsSuccess(true);
@@ -56,7 +56,7 @@ const VerifyEmailPage = () => {
         router.push('/login?from=verified');
       }, 2000);
       
-    } catch (error: any) {
+    } catch (error) {
       console.error('Email verification error:', error);
       setIsError(true);
       setIsVerifying(false);
@@ -94,7 +94,7 @@ const VerifyEmailPage = () => {
       });
       
       setResendEmail('');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Resend verification error:', error);
       
       const errorMsg = error?.message || error?.data?.error || 'Failed to resend verification email.';

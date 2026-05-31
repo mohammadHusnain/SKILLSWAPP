@@ -36,7 +36,7 @@ const ResetPasswordPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState(null);
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -94,7 +94,7 @@ const ResetPasswordPage = () => {
         router.push('/login?from=reset');
       }, 2000);
       
-    } catch (error: any) {
+    } catch (error) {
       console.error('Reset password error:', error);
       
       const errorMessage = error?.message || error?.data?.error || 'Failed to reset password. Please try again.';
