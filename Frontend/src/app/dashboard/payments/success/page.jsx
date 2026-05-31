@@ -62,23 +62,9 @@ function PaymentSuccessContent() {
   );
 }
 
-function PaymentSuccessFallback() {
-  return (
-    <DashboardLayout>
-      <div className="flex items-center justify-center min-h-full">
-        <Card className="w-full max-w-md">
-          <CardContent className="py-8 text-center text-gray-600">
-            Loading payment details...
-          </CardContent>
-        </Card>
-      </div>
-    </DashboardLayout>
-  );
-}
-
 export default function PaymentSuccessPage() {
   return (
-    <Suspense fallback={<PaymentSuccessFallback />}>
+    <Suspense fallback={<div>Loading payment details...</div>}>
       <PaymentSuccessContent />
     </Suspense>
   );

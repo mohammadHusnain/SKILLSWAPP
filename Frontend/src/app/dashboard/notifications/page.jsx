@@ -56,6 +56,10 @@ const NotificationsPage = () => {
   } = useNotifications();
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     if (!tokenManager.isAuthenticated()) {
       router.push('/login');
       return;
