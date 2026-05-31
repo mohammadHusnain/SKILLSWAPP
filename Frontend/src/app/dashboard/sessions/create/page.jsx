@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import SessionForm from '@/components/sessions/SessionForm';
 import { sessionsAPI, tokenManager, matchingAPI, profileAPI } from '@/lib/api';
 import { useToast } from '@/components/ui/use-toast';
 
-const CreateSessionPage = () => {
+const CreateSessionPageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -201,6 +201,20 @@ const CreateSessionPage = () => {
     </DashboardLayout>
   );
 };
+
+const CreateSessionPageFallback = () => (
+  <DashboardLayout>
+    <div className="flex items-center justify-center min-h-screen">
+      <RefreshCw className="w-8 h-8 animate-spin text-muted-foreground" />
+    </div>
+  </DashboardLayout>
+);
+
+const CreateSessionPage = () => (
+  <Suspense fallback={<CreateSessionPageFallback />}>
+    <CreateSessionPageContent />
+  </Suspense>
+);
 
 export default CreateSessionPage;
 

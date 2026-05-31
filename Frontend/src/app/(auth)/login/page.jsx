@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -25,7 +25,7 @@ const loginSchema = z.object({
     .min(1, 'Password is required'),
 });
 
-const LoginPage = () => {
+const LoginPageContent = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -306,5 +306,20 @@ const LoginPage = () => {
     </div>
   );
 };
+
+const LoginPageFallback = () => (
+  <div className="min-h-screen bg-gradient-to-br from-primary via-secondary to-primary-dark flex items-center justify-center p-4">
+    <div className="glass rounded-2xl p-8 shadow-xl text-center">
+      <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-accent" />
+      <p className="text-text">Loading...</p>
+    </div>
+  </div>
+);
+
+const LoginPage = () => (
+  <Suspense fallback={<LoginPageFallback />}>
+    <LoginPageContent />
+  </Suspense>
+);
 
 export default LoginPage;

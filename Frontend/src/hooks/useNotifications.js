@@ -113,18 +113,19 @@ export function useNotifications() {
 
   // Connect to WebSocket with strict singleton pattern
   const connectWebSocket = useCallback(() => {
+    if (typeof window === 'undefined') return;
     if (!tokenManager.isAuthenticated()) return;
 
     // Prevent duplicate connections
-    if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
+    if (wsRef.current && (wsRef.current.readyState === window.WebSocket.OPEN || wsRef.current.readyState === window.WebSocket.CONNECTING)) {
         return;
     }
 
-    const token = localStorage.getItem('access_token');
+    const token = window.localStorage.getItem('access_token');
     if (!token) return;
 
     // Connect to WebSocket
-    const ws = new WebSocket(`${WS_URL}/ws/chat/notifications/?token=${token}`);
+    const ws = new window.WebSocket(`${WS_URL}/ws/chat/notifications/?token=${token}`);
     wsRef.current = ws;
 
     // Heartbeat for this specific connection (managed via ref declared at top level)
@@ -139,7 +140,7 @@ export function useNotifications() {
 
       // Start heartbeat
       heartbeatIntervalRef.current = setInterval(() => {
-        if (ws.readyState === WebSocket.OPEN) {
+        if (ws.readyState === window.WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: 'ping' }));
         }
       }, 30000); // 30 seconds

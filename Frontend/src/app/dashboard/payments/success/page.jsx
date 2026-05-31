@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { tokenManager } from '@/lib/api';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [sessionId, setSessionId] = useState(null);
@@ -59,6 +59,28 @@ export default function PaymentSuccessPage() {
         </Card>
       </div>
     </DashboardLayout>
+  );
+}
+
+function PaymentSuccessFallback() {
+  return (
+    <DashboardLayout>
+      <div className="flex items-center justify-center min-h-full">
+        <Card className="w-full max-w-md">
+          <CardContent className="py-8 text-center text-gray-600">
+            Loading payment details...
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={<PaymentSuccessFallback />}>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }
 

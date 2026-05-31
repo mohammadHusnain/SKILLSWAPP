@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -13,7 +13,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-const VerifyEmailPage = () => {
+const VerifyEmailPageContent = () => {
   const [isVerifying, setIsVerifying] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -254,6 +254,23 @@ const VerifyEmailPage = () => {
 
   return null;
 };
+
+const VerifyEmailPageFallback = () => (
+  <div className="min-h-screen bg-gradient-to-br from-primary via-secondary to-primary-dark flex items-center justify-center p-4">
+    <div className="w-full max-w-md">
+      <div className="glass rounded-2xl p-8 shadow-xl text-center">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-accent" />
+        <p className="text-text">Loading verification...</p>
+      </div>
+    </div>
+  </div>
+);
+
+const VerifyEmailPage = () => (
+  <Suspense fallback={<VerifyEmailPageFallback />}>
+    <VerifyEmailPageContent />
+  </Suspense>
+);
 
 export default VerifyEmailPage;
 

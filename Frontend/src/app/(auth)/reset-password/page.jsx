@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -31,7 +31,7 @@ const resetPasswordSchema = z.object({
   path: ['confirmPassword'],
 });
 
-const ResetPasswordPage = () => {
+const ResetPasswordPageContent = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -253,6 +253,23 @@ const ResetPasswordPage = () => {
     </div>
   );
 };
+
+const ResetPasswordPageFallback = () => (
+  <div className="min-h-screen bg-gradient-to-br from-primary via-secondary to-primary-dark flex items-center justify-center p-4">
+    <div className="w-full max-w-md">
+      <div className="glass rounded-2xl p-8 shadow-xl text-center">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-accent" />
+        <p className="text-text">Loading reset link...</p>
+      </div>
+    </div>
+  </div>
+);
+
+const ResetPasswordPage = () => (
+  <Suspense fallback={<ResetPasswordPageFallback />}>
+    <ResetPasswordPageContent />
+  </Suspense>
+);
 
 export default ResetPasswordPage;
 

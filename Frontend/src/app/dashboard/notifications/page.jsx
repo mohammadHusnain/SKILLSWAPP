@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -43,6 +43,7 @@ const NotificationsPage = () => {
   const router = useRouter();
   const { toast } = useToast();
   const [filter, setFilter] = useState('all'); // 'all', 'unread', 'read'
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const {
     notifications,
     unreadCount,
@@ -53,6 +54,15 @@ const NotificationsPage = () => {
     handleNotificationClick,
     refreshNotifications
   } = useNotifications();
+
+  useEffect(() => {
+    if (!tokenManager.isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
+
+    setCheckingAuth(false);
+  }, [router]);
 
   const handleStartChat = async (e, recipientId) => {
     e.stopPropagation(); // Prevent notification click
@@ -81,9 +91,15 @@ const NotificationsPage = () => {
     }
   };
 
-  if (!tokenManager.isAuthenticated()) {
-    router.push('/login');
-    return null;
+  if (checkingAuth) {
+    return (
+      <DashboardLayout>
+        <div className="glass rounded-xl p-12 text-center max-w-4xl mx-auto">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
+          <p className="text-text-muted mt-4">Loading notifications...</p>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   const filteredNotifications = notifications.filter(notif => {
