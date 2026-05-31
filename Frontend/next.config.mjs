@@ -1,7 +1,32 @@
+import fs from 'fs';
+import path from 'path';
+
 /** @type {import('next').NextConfig} */
 
 // Validate required environment variables
 function validateEnvironment() {
+  // Load .env and .env.local manually if they are not loaded yet (Next.js loads them later in the boot cycle)
+  const envFiles = ['.env', '.env.local'];
+  for (const file of envFiles) {
+    const filePath = path.resolve(process.cwd(), file);
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      content.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+          const firstEqual = trimmed.indexOf('=');
+          if (firstEqual !== -1) {
+            const key = trimmed.slice(0, firstEqual).trim();
+            const val = trimmed.slice(firstEqual + 1).trim();
+            if (key && !process.env[key]) {
+              process.env[key] = val;
+            }
+          }
+        }
+      });
+    }
+  }
+
   const requiredEnvVars = [
     'NEXT_PUBLIC_API_URL',
     'NEXT_PUBLIC_WS_URL',
